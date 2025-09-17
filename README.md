@@ -1,1 +1,1 @@
-# wp-jetpack-portfolio
+# wp-jetpack-portfolio-tile
