@@ -4,7 +4,7 @@ Tags: jetpack, portfolio, grid, shortcode, responsive
 Requires at least: 6.2
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 0.01
+Stable tag: 0.02
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,6 +42,13 @@ By default the grid displays 3 columns on desktop, 2 on tablets, 1 on mobile, an
 * `type_ex`: Comma-separated Jetpack Portfolio type slugs to exclude.
 * `tag_in`: Comma-separated Jetpack Portfolio tag slugs to include.
 * `tag_ex`: Comma-separated Jetpack Portfolio tag slugs to exclude.
+* `reveal` (default `on-scroll`): Reveal mode. Set to `none` to disable scroll animation.
+* `stagger_ms` (default `80`): Millisecond delay multiplier applied per item during reveal.
+* `duration_ms` (default `400`): Millisecond duration for opacity and position transitions.
+* `easing` (default `cubic-bezier(.2,.6,.2,1)`): CSS timing function used for reveal transitions.
+* `root_margin` (default `200px 0px 0px 0px`): IntersectionObserver root margin.
+* `threshold` (default `0.15`): IntersectionObserver threshold between 0 and 1.
+* `prefetch` (default `near`): Image prefetch behaviour (`near`, `all`, or `none`).
 
 Example:
 
@@ -62,5 +69,11 @@ Query results are cached for 60 seconds using WordPress transients. Editing port
 
 == Changelog ==
 
+= 0.02 =
+* Added scroll-triggered reveal animation with stagger, duration, easing, and prefetch controls.
+* Implemented placeholder outlines and diagonal crosses until thumbnails load.
+* Added shortcode attributes for reveal behaviour, IntersectionObserver tuning, and image prefetch modes.
+
 = 0.01 =
 * Initial release with `[portfolio_tiles]` shortcode for Jetpack Portfolios.
+
