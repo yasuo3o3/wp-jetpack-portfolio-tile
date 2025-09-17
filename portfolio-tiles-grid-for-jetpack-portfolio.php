@@ -44,7 +44,7 @@ function ptg_enqueue_assets() {
     wp_register_style( 'ptg-portfolio-tiles-grid', false, array(), PTG_PLUGIN_VERSION );
     wp_enqueue_style( 'ptg-portfolio-tiles-grid' );
 
-     = '.ptg-grid{display:grid;grid-template-columns:repeat(var(--ptg-cols),1fr);gap:var(--ptg-gap);}' .
+    $css = '.ptg-grid{display:grid;grid-template-columns:repeat(var(--ptg-cols),1fr);gap:var(--ptg-gap);}' .
         '.ptg-grid{--ptg-cols:var(--ptg-cols-sp);--ptg-gap:0;--ptg-aspect:1/1;}' .
         '@media (min-width:600px){.ptg-grid{--ptg-cols:var(--ptg-cols-tb,var(--ptg-cols-sp));}}' .
         '@media (min-width:1024px){.ptg-grid{--ptg-cols:var(--ptg-cols-pc,var(--ptg-cols-tb,var(--ptg-cols-sp)));}}' .
@@ -52,7 +52,7 @@ function ptg_enqueue_assets() {
         '.ptg-item img{width:100%;height:100%;object-fit:cover;aspect-ratio:var(--ptg-aspect);display:block;}' .
         '.ptg-item .screen-reader-text{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}';
 
-    wp_add_inline_style( 'ptg-portfolio-tiles-grid',  );
+    wp_add_inline_style( 'ptg-portfolio-tiles-grid', $css );
 }
 
 /**
@@ -61,8 +61,8 @@ function ptg_enqueue_assets() {
  * @param array  Shortcode attributes.
  * @return string
  */
-function ptg_render_portfolio_tiles(  ) {
-     = array(
+function ptg_render_portfolio_tiles( $atts ) {
+    $defaults = array(
         'cols_pc' => 3,
         'cols_tb' => 2,
         'cols_sp' => 1,
@@ -76,40 +76,40 @@ function ptg_render_portfolio_tiles(  ) {
         'tag_ex'  => '',
     );
 
-     = shortcode_atts( , , 'portfolio_tiles' );
+    $atts = shortcode_atts( $defaults, $atts, 'portfolio_tiles' );
 
-     = ptg_sanitize_column_value( ['cols_pc'] );
-     = ptg_sanitize_column_value( ['cols_tb'] );
-     = ptg_sanitize_column_value( ['cols_sp'] );
-        = ptg_sanitize_row_value( ['rows'] );
+    $cols_pc = ptg_sanitize_column_value( $atts['cols_pc'] );
+    $cols_tb = ptg_sanitize_column_value( $atts['cols_tb'] );
+    $cols_sp = ptg_sanitize_column_value( $atts['cols_sp'] );
+    $rows = ptg_sanitize_row_value( $atts['rows'] );
 
-     = max( 1,  *  );
+    $total_items = max( 1, $cols_pc * $rows );
 
-     = ptg_sanitize_gap( ['gap'] );
+    $gap = ptg_sanitize_gap( $atts['gap'] );
 
-     = ptg_sanitize_aspect( ['aspect'] );
+    $aspect = ptg_sanitize_aspect( $atts['aspect'] );
 
-     = ptg_sanitize_image_size( ['size'] );
+    $size = ptg_sanitize_image_size( $atts['size'] );
 
-     = ptg_sanitize_slug_list( ['type_in'] );
-     = ptg_sanitize_slug_list( ['type_ex'] );
-      = ptg_sanitize_slug_list( ['tag_in'] );
-      = ptg_sanitize_slug_list( ['tag_ex'] );
+    $type_in = ptg_sanitize_slug_list( $atts['type_in'] );
+    $type_ex = ptg_sanitize_slug_list( $atts['type_ex'] );
+    $tag_in = ptg_sanitize_slug_list( $atts['tag_in'] );
+    $tag_ex = ptg_sanitize_slug_list( $atts['tag_ex'] );
 
-     = ptg_build_cache_key( compact( 'cols_pc', 'cols_tb', 'cols_sp', 'rows', 'gap', 'aspect', 'size', 'type_in', 'type_ex', 'tag_in', 'tag_ex' ) );
-        = get_transient(  );
+    $cache_key = ptg_build_cache_key( compact( 'cols_pc', 'cols_tb', 'cols_sp', 'rows', 'gap', 'aspect', 'size', 'type_in', 'type_ex', 'tag_in', 'tag_ex' ) );
+    $cached_html = get_transient( $cache_key );
 
     ptg_enqueue_assets();
 
-    if ( false !==  ) {
-        return ;
+    if ( false !== $cached_html ) {
+        return $cached_html;
     }
 
-     = array(
+    $query_args = array(
         'post_type'      => 'jetpack-portfolio',
         'orderby'        => 'menu_order',
         'order'          => 'ASC',
-        'posts_per_page' => ,
+        'posts_per_page' => $total_items,
         'meta_query'     => array(
             array(
                 'key'     => '_thumbnail_id',
@@ -118,55 +118,55 @@ function ptg_render_portfolio_tiles(  ) {
         ),
     );
 
-     = ptg_build_tax_query( , , ,  );
-    if ( ! empty(  ) ) {
-        ['tax_query'] = ;
+    $tax_query = ptg_build_tax_query( $type_in, $type_ex, $tag_in, $tag_ex );
+    if ( ! empty( $tax_query ) ) {
+        $query_args['tax_query'] = $tax_query;
     }
 
-     = new WP_Query(  );
+    $query = new WP_Query( $query_args );
 
-    if ( ! ->have_posts() ) {
+    if ( ! $query->have_posts() ) {
         wp_reset_postdata();
-         = esc_html__( 'No items', 'portfolio-tiles-grid' );
-        set_transient( , , PTG_TRANSIENT_TTL );
-        return ;
+        $html = esc_html__( 'No items', 'portfolio-tiles-grid' );
+        set_transient( $cache_key, $html, PTG_TRANSIENT_TTL );
+        return $html;
     }
 
-     = sprintf(
-        'style="--ptg-cols-pc:%1;--ptg-cols-tb:%2;--ptg-cols-sp:%3;--ptg-gap:%4;--ptg-aspect:%5;"',
-        (int) ,
-        (int) ,
-        (int) ,
-        esc_attr(  ),
-        esc_attr(  )
+    $grid_style = sprintf(
+        'style="--ptg-cols-pc:%1$d;--ptg-cols-tb:%2$d;--ptg-cols-sp:%3$d;--ptg-gap:%4$s;--ptg-aspect:%5$s;"',
+        (int) $cols_pc,
+        (int) $cols_tb,
+        (int) $cols_sp,
+        esc_attr( $gap ),
+        esc_attr( $aspect )
     );
 
     ob_start();
-    printf( '<div class="ptg-grid" role="list" %s>',  );
+    printf( '<div class="ptg-grid" role="list" %s>', $grid_style );
 
-    while ( ->have_posts() ) {
-        ->the_post();
-          = get_the_ID();
-              = get_permalink(  );
-            = get_the_title(  );
-         = get_post_thumbnail_id(  );
+    while ( $query->have_posts() ) {
+        $query->the_post();
+        $post_id = get_the_ID();
+        $permalink = get_permalink( $post_id );
+        $title = get_the_title( $post_id );
+        $thumbnail_id = get_post_thumbnail_id( $post_id );
 
-        if ( !  ) {
+        if ( ! $thumbnail_id ) {
             continue;
         }
 
-         = wp_get_attachment_image_src( ,  );
-        if ( !  ) {
+        $image_data = wp_get_attachment_image_src( $thumbnail_id, $size );
+        if ( ! $image_data ) {
             continue;
         }
 
-         = [0];
+        $image_url = $image_data[0];
 
         printf(
-            '<a role="listitem" class="ptg-item" href="%1"><img src="%2" alt="%3" loading="lazy" decoding="async" /><span class="screen-reader-text">%3</span></a>',
-            esc_url(  ),
-            esc_url(  ),
-            esc_attr(  )
+            '<a role="listitem" class="ptg-item" href="%1$s"><img src="%2$s" alt="%3$s" loading="lazy" decoding="async" /><span class="screen-reader-text">%3$s</span></a>',
+            esc_url( $permalink ),
+            esc_url( $image_url ),
+            esc_attr( $title )
         );
     }
 
@@ -174,11 +174,11 @@ function ptg_render_portfolio_tiles(  ) {
 
     wp_reset_postdata();
 
-     = ob_get_clean();
+    $html = ob_get_clean();
 
-    set_transient( , , PTG_TRANSIENT_TTL );
+    set_transient( $cache_key, $html, PTG_TRANSIENT_TTL );
 
-    return ;
+    return $html;
 }
 
 /**
@@ -187,18 +187,18 @@ function ptg_render_portfolio_tiles(  ) {
  * @param mixed  Attribute value.
  * @return int
  */
-function ptg_sanitize_column_value(  ) {
-     = absint(  );
+function ptg_sanitize_column_value( $value ) {
+    $value = absint( $value );
 
-    if (  < 1 ) {
-         = 1;
+    if ( $value < 1 ) {
+        $value = 1;
     }
 
-    if (  > 4 ) {
-         = 4;
+    if ( $value > 4 ) {
+        $value = 4;
     }
 
-    return ;
+    return $value;
 }
 
 /**
@@ -207,18 +207,18 @@ function ptg_sanitize_column_value(  ) {
  * @param mixed  Attribute value.
  * @return int
  */
-function ptg_sanitize_row_value(  ) {
-     = absint(  );
+function ptg_sanitize_row_value( $value ) {
+    $value = absint( $value );
 
-    if (  < 1 ) {
-         = 1;
+    if ( $value < 1 ) {
+        $value = 1;
     }
 
-    if (  > 12 ) {
-         = 12;
+    if ( $value > 12 ) {
+        $value = 12;
     }
 
-    return ;
+    return $value;
 }
 
 /**
@@ -227,15 +227,15 @@ function ptg_sanitize_row_value(  ) {
  * @param string  Attribute value.
  * @return string
  */
-function ptg_sanitize_gap(  ) {
-     = trim( (string)  );
+function ptg_sanitize_gap( $value ) {
+    $value = trim( (string) $value );
 
-    if ( '' ===  ) {
+    if ( '' === $value ) {
         return '0';
     }
 
-    if ( preg_match( '/^\d+(?:\.\d+)?(?:px|rem|em|%)?$/',  ) ) {
-        return ;
+    if ( preg_match( '/^\d+(?:\.\d+)?(?:px|rem|em|%)?$/', $value ) ) {
+        return $value;
     }
 
     return '0';
@@ -247,21 +247,21 @@ function ptg_sanitize_gap(  ) {
  * @param string  Attribute value.
  * @return string
  */
-function ptg_sanitize_aspect(  ) {
-     = array(
+function ptg_sanitize_aspect( $value ) {
+    $allowed = array(
         '1:1'  => '1 / 1',
         '16:9' => '16 / 9',
         '4:3'  => '4 / 3',
         '3:4'  => '3 / 4',
     );
 
-     = strtoupper( (string)  );
+    $value = strtoupper( (string) $value );
 
-    if ( isset( [  ] ) ) {
-        return [  ];
+    if ( isset( $allowed[ $value ] ) ) {
+        return $allowed[ $value ];
     }
 
-    return ['1:1'];
+    return $allowed['1:1'];
 }
 
 /**
@@ -270,23 +270,23 @@ function ptg_sanitize_aspect(  ) {
  * @param string  Attribute value.
  * @return string
  */
-function ptg_sanitize_image_size(  ) {
-     = sanitize_key(  );
+function ptg_sanitize_image_size( $value ) {
+    $value = sanitize_key( $value );
 
-    if ( empty(  ) ) {
+    if ( empty( $value ) ) {
         return 'medium_large';
     }
 
-     = get_intermediate_image_sizes();
-    [] = 'thumbnail';
-    [] = 'medium';
-    [] = 'large';
-    [] = 'full';
+    $sizes = get_intermediate_image_sizes();
+    $sizes[] = 'thumbnail';
+    $sizes[] = 'medium';
+    $sizes[] = 'large';
+    $sizes[] = 'full';
 
-     = array_unique(  );
+    $sizes = array_unique( $sizes );
 
-    if ( in_array( , , true ) ) {
-        return ;
+    if ( in_array( $value, $sizes, true ) ) {
+        return $value;
     }
 
     return 'medium_large';
@@ -298,26 +298,26 @@ function ptg_sanitize_image_size(  ) {
  * @param string  Attribute value.
  * @return array
  */
-function ptg_sanitize_slug_list(  ) {
-     = trim( (string)  );
-    if ( '' ===  ) {
+function ptg_sanitize_slug_list( $value ) {
+    $value = trim( (string) $value );
+    if ( '' === $value ) {
         return array();
     }
 
-     = array_filter( array_map( 'trim', explode( ',',  ) ) );
-    if ( empty(  ) ) {
+    $parts = array_filter( array_map( 'trim', explode( ',', $value ) ) );
+    if ( empty( $parts ) ) {
         return array();
     }
 
-     = array();
-    foreach (  as  ) {
-         = sanitize_title(  );
-        if ( '' !==  ) {
-            [] = ;
+    $result = array();
+    foreach ( $parts as $part ) {
+        $slug = sanitize_title( $part );
+        if ( '' !== $slug ) {
+            $result[] = $slug;
         }
     }
 
-    return array_unique(  );
+    return array_unique( $result );
 }
 
 /**
@@ -329,50 +329,50 @@ function ptg_sanitize_slug_list(  ) {
  * @param array   Excluded portfolio tags.
  * @return array
  */
-function ptg_build_tax_query( , , ,  ) {
-     = array();
+function ptg_build_tax_query( $type_in, $type_ex, $tag_in, $tag_ex ) {
+    $tax_query = array();
 
-    if ( ! empty(  ) ) {
-        [] = array(
+    if ( ! empty( $type_in ) ) {
+        $tax_query[] = array(
             'taxonomy' => 'jetpack-portfolio-type',
             'field'    => 'slug',
-            'terms'    => ,
+            'terms'    => $type_in,
             'operator' => 'IN',
         );
     }
 
-    if ( ! empty(  ) ) {
-        [] = array(
+    if ( ! empty( $type_ex ) ) {
+        $tax_query[] = array(
             'taxonomy' => 'jetpack-portfolio-type',
             'field'    => 'slug',
-            'terms'    => ,
+            'terms'    => $type_ex,
             'operator' => 'NOT IN',
         );
     }
 
-    if ( ! empty(  ) ) {
-        [] = array(
+    if ( ! empty( $tag_in ) ) {
+        $tax_query[] = array(
             'taxonomy' => 'jetpack-portfolio-tag',
             'field'    => 'slug',
-            'terms'    => ,
+            'terms'    => $tag_in,
             'operator' => 'IN',
         );
     }
 
-    if ( ! empty(  ) ) {
-        [] = array(
+    if ( ! empty( $tag_ex ) ) {
+        $tax_query[] = array(
             'taxonomy' => 'jetpack-portfolio-tag',
             'field'    => 'slug',
-            'terms'    => ,
+            'terms'    => $tag_ex,
             'operator' => 'NOT IN',
         );
     }
 
-    if ( count(  ) > 1 ) {
-        ['relation'] = 'AND';
+    if ( count( $tax_query ) > 1 ) {
+        $tax_query['relation'] = 'AND';
     }
 
-    return ;
+    return $tax_query;
 }
 
 /**
@@ -381,7 +381,7 @@ function ptg_build_tax_query( , , ,  ) {
  * @param array  Data to hash.
  * @return string
  */
-function ptg_build_cache_key(  ) {
-    ['locale'] = get_locale();
-    return 'ptg_tiles_' . md5( wp_json_encode(  ) );
+function ptg_build_cache_key( $data ) {
+    $data['locale'] = get_locale();
+    return 'ptg_tiles_' . md5( wp_json_encode( $data ) );
 }
