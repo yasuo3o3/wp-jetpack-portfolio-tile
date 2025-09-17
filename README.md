@@ -62,4 +62,68 @@ The rendered markup is cached for 60 seconds using a transient keyed by shortcod
 - Flush transients during testing: delete entries starting with `ptg_tiles_`
 
 See `readme.txt` for the WordPress.org plugin description and changelog.
+# Portfolio Tiles Grid for Jetpack Portfolio (日本語)
+
+Jetpack Portfolio 投稿をタイル状のグリッドで表示するレスポンシブなショートコードです。遅延読み込み、ブレイクポイントごとの列数、任意のタクソノミーによるフィルタリング、スクロールに合わせた表示演出を備えています。
+
+## 要件
+- WordPress 6.2 以上
+- PHP 7.4 以上
+- Jetpack（Portfolio カスタム投稿タイプを有効化し、アイキャッチ画像を設定済み）
+
+## インストール
+1. このリポジトリを `wp-content/plugins/portfolio-tiles-grid-for-jetpack-portfolio/` に配置します。
+2. WordPress 管理画面のプラグイン一覧で **Portfolio Tiles Grid for Jetpack Portfolio** を有効化します。
+3. Jetpack の Portfolio モジュールを有効にし、各アイテムにアイキャッチ画像が設定されていることを確認します。
+
+## 使い方
+投稿・固定ページ・ブロックなどに以下のショートコードを挿入します。
+
+```
+[portfolio_tiles]
+```
+
+## ショートコード属性
+| 属性 | 既定値 | 許可値 | 説明 |
+| --- | --- | --- | --- |
+| `cols_pc` | `3` | 1-4 | デスクトップ（>=1024px）での列数。 |
+| `cols_tb` | `2` | 1-4 | タブレット（600-1023px）での列数。 |
+| `cols_sp` | `1` | 1-4 | モバイル（<600px）での列数。 |
+| `rows` | `3` | 1-12 | 行数。表示件数は `cols_pc * rows`。 |
+| `gap` | `0` | CSS 長さ | タイル間の余白（例: `12px`, `1.5rem`）。 |
+| `aspect` | `1:1` | `1:1`, `16:9`, `4:3`, `3:4` | `aspect-ratio` に適用するアスペクト比。 |
+| `size` | `medium_large` | WP 画像サイズ | `wp_get_attachment_image_src()` に渡す画像サイズ。 |
+| `type_in` | `-` | スラッグ | Jetpack Portfolio タイプ（カンマ区切り）を含める。 |
+| `type_ex` | `-` | スラッグ | Jetpack Portfolio タイプを除外する。 |
+| `tag_in` | `-` | スラッグ | Jetpack Portfolio タグを含める。 |
+| `tag_ex` | `-` | スラッグ | Jetpack Portfolio タグを除外する。 |
+| `reveal` | `on-scroll` | `on-scroll`, `none` | スクロール連動の表示アニメーションを切り替え。 |
+| `stagger_ms` | `80` | 0-2000 | `reveal="on-scroll"` 時のアイテムごとの遅延（ミリ秒）。 |
+| `duration_ms` | `400` | 0-10000 | 不透明度と位置遷移のアニメーション時間（ミリ秒）。 |
+| `easing` | `cubic-bezier(.2,.6,.2,1)` | CSS easing | 表示アニメーションに使うタイミング関数。 |
+| `root_margin` | `200px 0px 0px 0px` | CSS margin list | IntersectionObserver の `rootMargin`。 |
+| `threshold` | `0.15` | 0-1 | IntersectionObserver を発火させるしきい値。 |
+| `prefetch` | `near` | `near`, `all`, `none` | 表示前の画像先読み方法。 |
+
+カスタムレイアウトやフィルタを適用した例:
+
+```
+[portfolio_tiles cols_pc="4" cols_tb="3" cols_sp="2" rows="2" gap="16px" aspect="16:9" type_in="branding" tag_ex="archived" reveal="on-scroll" stagger_ms="60" duration_ms="300"]
+```
+
+## 表示演出の挙動
+- タイルは初期状態でわずかに上にずれ、プレースホルダーの枠線と対角線が表示されます。
+- IntersectionObserver が DOM 順（左上→右→次の行）で監視し、設定された遅延とイージングで順次フェードインします。
+- `prefetch="near"` は交差直前に画像を先読みし、`prefetch="all"` は全タイルを即時先読み、`prefetch="none"` はブラウザの遅延読み込みに委ねます。
+- `prefers-reduced-motion: reduce` または `reveal="none"` の場合はアニメーションを行わず即時表示します。
+
+## キャッシュ
+出力されたマークアップはショートコード属性とロケールを鍵に 60 秒間トランジェントへキャッシュされます。Portfolio を更新するかキャッシュを削除すると再生成されます。
+
+## 開発
+- PHPCS: `vendor/bin/phpcs --standard=WordPress,WordPress-Extra`
+- PHP 構文チェック: `php -l portfolio-tiles-grid-for-jetpack-portfolio.php`
+- 動作検証時にトランジェントをクリアするには、キーが `ptg_tiles_` で始まる項目を削除します。
+
+詳細は WordPress.org 向けの説明と変更履歴をまとめた `readme.txt` を参照してください。
 
