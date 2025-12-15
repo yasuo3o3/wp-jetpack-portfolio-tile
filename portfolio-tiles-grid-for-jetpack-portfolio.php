@@ -63,7 +63,7 @@ function ptg_enqueue_assets() {
             '.ptg-title{position:absolute;bottom:0;left:0;right:0;padding:12px;background:rgba(0,0,0,0.75);color:#fff;font-size:14px;font-weight:500;line-height:1.2;word-wrap:break-word;overflow:hidden;pointer-events:none;opacity:1;transition:opacity var(--ptg-duration) var(--ptg-ease);}' .
             '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item .ptg-title{opacity:0;}' .
             '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item.is-visible .ptg-title{opacity:1;}' .
-            '.ptg-item[data-ptg-show-title="no"] .ptg-title{display:none;}' .
+            '.ptg-item[data-ptg-show-title=\"no\"] .ptg-title{display:none;}' .
             '@media (max-width:599px){.ptg-title{padding:8px;font-size:12px;}}' .
             '@media (min-width:600px) and (max-width:1023px){.ptg-title{padding:10px;font-size:13px;}}' .
             '@media (prefers-reduced-motion: reduce){.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item{transition:none;opacity:1;transform:none;}.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item img{transition:none;opacity:1;}.ptg-title{transition:none;}}';
