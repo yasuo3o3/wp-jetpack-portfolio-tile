@@ -60,7 +60,13 @@ function ptg_enqueue_assets() {
             '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item.has-img::before,.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item.has-img::after{opacity:0;}' .
             '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item.has-img{outline-color:rgba(153,153,153,0);}' .
             '.ptg-item .screen-reader-text{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}' .
-            '@media (prefers-reduced-motion: reduce){.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item{transition:none;opacity:1;transform:none;}.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item img{transition:none;opacity:1;}}';
+            '.ptg-title{position:absolute;bottom:0;left:0;right:0;padding:12px;background:rgba(0,0,0,0.75);color:#fff;font-size:14px;font-weight:500;line-height:1.2;word-wrap:break-word;overflow:hidden;pointer-events:none;opacity:1;transition:opacity var(--ptg-duration) var(--ptg-ease);}' .
+            '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item .ptg-title{opacity:0;}' .
+            '.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item.is-visible .ptg-title{opacity:1;}' .
+            '.ptg-item[data-ptg-show-title="no"] .ptg-title{display:none;}' .
+            '@media (max-width:599px){.ptg-title{padding:8px;font-size:12px;}}' .
+            '@media (min-width:600px) and (max-width:1023px){.ptg-title{padding:10px;font-size:13px;}}' .
+            '@media (prefers-reduced-motion: reduce){.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item{transition:none;opacity:1;transform:none;}.ptg-grid[data-ptg-reveal="on-scroll"] .ptg-item img{transition:none;opacity:1;}.ptg-title{transition:none;}}';
 
         wp_add_inline_style( 'ptg-portfolio-tiles-grid', $css );
         $style_added = true;
@@ -106,6 +112,7 @@ function ptg_render_portfolio_tiles( $atts ) {
         'root_margin' => '200px 0px 0px 0px',
         'threshold'   => 0.15,
         'prefetch'    => 'near',
+        'show_title'  => 'yes',
     );
 
     $atts = shortcode_atts( $defaults, $atts, 'portfolio_tiles' );
@@ -133,6 +140,7 @@ function ptg_render_portfolio_tiles( $atts ) {
     $root_margin = ptg_sanitize_root_margin( $atts['root_margin'] );
     $threshold   = ptg_sanitize_threshold( $atts['threshold'] );
     $prefetch    = ptg_sanitize_prefetch_mode( $atts['prefetch'] );
+    $show_title  = ptg_sanitize_show_title( $atts['show_title'] );
 
     $cache_key = ptg_build_cache_key(
         compact(
@@ -153,7 +161,8 @@ function ptg_render_portfolio_tiles( $atts ) {
             'easing',
             'root_margin',
             'threshold',
-            'prefetch'
+            'prefetch',
+            'show_title'
         )
     );
 
@@ -244,12 +253,13 @@ function ptg_render_portfolio_tiles( $atts ) {
         }
 
         printf(
-            '<a role="listitem" class="%1$s" href="%2$s" data-idx="%3$d"><img src="%4$s" alt="%5$s" loading="lazy" decoding="async" /><span class="screen-reader-text">%5$s</span></a>',
+            '<a role="listitem" class="%1$s" href="%2$s" data-idx="%3$d" data-ptg-show-title="%6$s"><img src="%4$s" alt="%5$s" loading="lazy" decoding="async" /><span class="ptg-title">%5$s</span><span class="screen-reader-text">%5$s</span></a>',
             esc_attr( implode( ' ', $classes ) ),
             esc_url( $permalink ),
             (int) $index,
             esc_url( $image_url ),
-            esc_attr( $title )
+            esc_attr( $title ),
+            esc_attr( $show_title )
         );
 
         $index++;
@@ -625,6 +635,23 @@ function ptg_sanitize_prefetch_mode( $value ) {
     }
 
     return 'near';
+}
+
+/**
+ * Sanitize show_title attribute.
+ *
+ * @param string $value Attribute value.
+ * @return string
+ */
+function ptg_sanitize_show_title( $value ) {
+    $value   = sanitize_key( trim( (string) $value ) );
+    $allowed = array( 'yes', 'no' );
+
+    if ( in_array( $value, $allowed, true ) ) {
+        return $value;
+    }
+
+    return 'yes';
 }
 
 
