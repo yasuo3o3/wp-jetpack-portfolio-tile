@@ -40,6 +40,10 @@ Insert the shortcode in any post, page, or block content:
 | `root_margin` | `200px 0px 0px 0px` | CSS margin list | IntersectionObserver root margin for reveal. |
 | `threshold` | `0.15` | 0-1 | IntersectionObserver threshold that triggers visibility. |
 | `prefetch` | `near` | `near`, `all`, `none` | Image prefetch behaviour prior to reveal. |
+| `show_title` | `yes` | `yes`, `no` | Display title overlay on image. |
+| `max_title_chars` | `0` | 0+ | Maximum title character count (0 = no limit). Exceeding titles are truncated with ellipsis. |
+| `orderby` | `date` | `date`, `menu_order`, `title`, `ID` | Sort posts by field. |
+| `order` | `DESC` | `ASC`, `DESC` | Sort order (ascending or descending). |
 
 Example with custom layout and filtering:
 
@@ -104,6 +108,10 @@ Jetpack Portfolio 投稿をタイル状のグリッドで表示するレスポ�
 | `root_margin` | `200px 0px 0px 0px` | CSS margin list | IntersectionObserver の `rootMargin`。 |
 | `threshold` | `0.15` | 0-1 | IntersectionObserver を発火させるしきい値。 |
 | `prefetch` | `near` | `near`, `all`, `none` | 表示前の画像先読み方法。 |
+| `show_title` | `yes` | `yes`, `no` | 画像上にタイトルを重ねて表示するか。 |
+| `max_title_chars` | `0` | 0+ | タイトルの最大文字数（0 = 制限なし）。超過時は末尾に「…」を追加して省略。 |
+| `orderby` | `date` | `date`, `menu_order`, `title`, `ID` | 投稿の並び替え基準。 |
+| `order` | `DESC` | `ASC`, `DESC` | 並び順（昇順または降順）。 |
 
 カスタムレイアウトやフィルタを適用した例:
 

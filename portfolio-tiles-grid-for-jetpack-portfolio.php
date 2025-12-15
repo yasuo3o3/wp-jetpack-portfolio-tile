@@ -112,9 +112,10 @@ function ptg_render_portfolio_tiles( $atts ) {
         'root_margin' => '200px 0px 0px 0px',
         'threshold'   => 0.15,
         'prefetch'    => 'near',
-        'show_title'  => 'yes',
-        'orderby'     => 'date',
-        'order'       => 'DESC',
+        'show_title'     => 'yes',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'max_title_chars' => '0',
     );
 
     $atts = shortcode_atts( $defaults, $atts, 'portfolio_tiles' );
@@ -142,9 +143,10 @@ function ptg_render_portfolio_tiles( $atts ) {
     $root_margin = ptg_sanitize_root_margin( $atts['root_margin'] );
     $threshold   = ptg_sanitize_threshold( $atts['threshold'] );
     $prefetch    = ptg_sanitize_prefetch_mode( $atts['prefetch'] );
-    $show_title  = ptg_sanitize_show_title( $atts['show_title'] );
-    $orderby     = ptg_sanitize_orderby( $atts['orderby'] );
-    $order       = ptg_sanitize_order( $atts['order'] );
+    $show_title      = ptg_sanitize_show_title( $atts['show_title'] );
+    $orderby         = ptg_sanitize_orderby( $atts['orderby'] );
+    $order           = ptg_sanitize_order( $atts['order'] );
+    $max_title_chars = ptg_sanitize_max_title_chars( $atts['max_title_chars'] );
 
     $cache_key = ptg_build_cache_key(
         compact(
@@ -168,7 +170,8 @@ function ptg_render_portfolio_tiles( $atts ) {
             'prefetch',
             'show_title',
             'orderby',
-            'order'
+            'order',
+            'max_title_chars'
         )
     );
 
@@ -258,13 +261,16 @@ function ptg_render_portfolio_tiles( $atts ) {
             $classes[] = 'is-visible';
         }
 
+        $display_title = ptg_truncate_title( $title, $max_title_chars );
+
         printf(
-            '<a role="listitem" class="%1$s" href="%2$s" data-idx="%3$d" data-ptg-show-title="%6$s"><img src="%4$s" alt="%5$s" loading="lazy" decoding="async" /><span class="ptg-title">%5$s</span><span class="screen-reader-text">%5$s</span></a>',
+            '<a role="listitem" class="%1$s" href="%2$s" data-idx="%3$d" data-ptg-show-title="%7$s"><img src="%4$s" alt="%5$s" loading="lazy" decoding="async" /><span class="ptg-title">%6$s</span><span class="screen-reader-text">%5$s</span></a>',
             esc_attr( implode( ' ', $classes ) ),
             esc_url( $permalink ),
             (int) $index,
             esc_url( $image_url ),
             esc_attr( $title ),
+            esc_html( $display_title ),
             esc_attr( $show_title )
         );
 
@@ -694,5 +700,34 @@ function ptg_sanitize_order( $value ) {
     return 'DESC';
 }
 
+/**
+ * Sanitize max_title_chars attribute.
+ *
+ * @param string $value Attribute value.
+ * @return int
+ */
+function ptg_sanitize_max_title_chars( $value ) {
+    $int_value = absint( $value );
+    return ( $int_value >= 0 ) ? $int_value : 0;
+}
 
+/**
+ * Truncate title if max_title_chars is set.
+ *
+ * @param string $title           Post title.
+ * @param int    $max_title_chars Maximum character count (0 = no limit).
+ * @return string
+ */
+function ptg_truncate_title( $title, $max_title_chars ) {
+    if ( $max_title_chars <= 0 ) {
+        return $title;
+    }
 
+    $length = mb_strlen( $title, 'UTF-8' );
+
+    if ( $length <= $max_title_chars ) {
+        return $title;
+    }
+
+    return mb_substr( $title, 0, $max_title_chars, 'UTF-8' ) . '…';
+}

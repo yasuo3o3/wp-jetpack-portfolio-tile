@@ -49,6 +49,10 @@ By default the grid displays 3 columns on desktop, 2 on tablets, 1 on mobile, an
 * `root_margin` (default `200px 0px 0px 0px`): IntersectionObserver root margin.
 * `threshold` (default `0.15`): IntersectionObserver threshold between 0 and 1.
 * `prefetch` (default `near`): Image prefetch behaviour (`near`, `all`, or `none`).
+* `show_title` (default `yes`): Display title overlay on image (`yes` or `no`).
+* `max_title_chars` (default `0`): Maximum title character count (0 = no limit). Exceeding titles are truncated with ellipsis.
+* `orderby` (default `date`): Sort posts by field (`date`, `menu_order`, `title`, or `ID`).
+* `order` (default `DESC`): Sort order (`ASC` for ascending or `DESC` for descending).
 
 Example:
 
