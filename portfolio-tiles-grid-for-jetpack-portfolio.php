@@ -113,6 +113,8 @@ function ptg_render_portfolio_tiles( $atts ) {
         'threshold'   => 0.15,
         'prefetch'    => 'near',
         'show_title'  => 'yes',
+        'orderby'     => 'date',
+        'order'       => 'DESC',
     );
 
     $atts = shortcode_atts( $defaults, $atts, 'portfolio_tiles' );
@@ -141,6 +143,8 @@ function ptg_render_portfolio_tiles( $atts ) {
     $threshold   = ptg_sanitize_threshold( $atts['threshold'] );
     $prefetch    = ptg_sanitize_prefetch_mode( $atts['prefetch'] );
     $show_title  = ptg_sanitize_show_title( $atts['show_title'] );
+    $orderby     = ptg_sanitize_orderby( $atts['orderby'] );
+    $order       = ptg_sanitize_order( $atts['order'] );
 
     $cache_key = ptg_build_cache_key(
         compact(
@@ -162,7 +166,9 @@ function ptg_render_portfolio_tiles( $atts ) {
             'root_margin',
             'threshold',
             'prefetch',
-            'show_title'
+            'show_title',
+            'orderby',
+            'order'
         )
     );
 
@@ -175,8 +181,8 @@ function ptg_render_portfolio_tiles( $atts ) {
 
     $query_args = array(
         'post_type'      => 'jetpack-portfolio',
-        'orderby'        => 'menu_order',
-        'order'          => 'ASC',
+        'orderby'        => $orderby,
+        'order'          => $order,
         'posts_per_page' => $total_items,
         'meta_query'     => array(
             array(
@@ -652,6 +658,40 @@ function ptg_sanitize_show_title( $value ) {
     }
 
     return 'yes';
+}
+
+/**
+ * Sanitize orderby attribute.
+ *
+ * @param string $value Attribute value.
+ * @return string
+ */
+function ptg_sanitize_orderby( $value ) {
+    $value   = sanitize_key( $value );
+    $allowed = array( 'date', 'menu_order', 'title', 'ID' );
+
+    if ( in_array( $value, $allowed, true ) ) {
+        return $value;
+    }
+
+    return 'date';
+}
+
+/**
+ * Sanitize order attribute.
+ *
+ * @param string $value Attribute value.
+ * @return string
+ */
+function ptg_sanitize_order( $value ) {
+    $value   = strtoupper( sanitize_key( $value ) );
+    $allowed = array( 'ASC', 'DESC' );
+
+    if ( in_array( $value, $allowed, true ) ) {
+        return $value;
+    }
+
+    return 'DESC';
 }
 
 
